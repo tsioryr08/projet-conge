@@ -17,7 +17,7 @@ Rôle:employe
 ○ Voir son solde de congés restant par type
 Optionnel: 
 ○ Annuler une demande encore en attente
-○ Modifier son profil (nom, mot de passe
+○ Modifier son profil (nom, mot de passe)
 
 
 ---Responsable RH 
@@ -39,3 +39,101 @@ Rôle admin:
 Optionnel: 
 ○ Initiallser / aluster le solde annuel d'un emplové
 ○ Voir l'historique complet de toutes les demandes
+
+
+WORKFLOW D’UNE DEMANDE DE CONGÉ 
+Employé soumet > 
+-en_attente>
+--approuvée > solde déduit
+--refusée > solde intact
+
+Le solde est déduit uniquement à l'approbation, pas à la soumission. Si la demande est annulée ou refusée après approbation, le solde est recrédité. Cette logique métier est le coeur du projet
+
+SCHÉMA DE BASE DE DONNE
+employes:
+id (PK) 
+nom 
+prenom
+email (UNIQUE)
+password 
+role 
+departement_id (FK) 
+date embauche actif (0/1)
+
+departements:
+id (PK) 
+nom 
+description
+
+types_conge: 
+id (PK) 
+Libelle
+jours_annuels deductible (0/1)
+
+soldes:
+ id (PK)
+employe_id (FK) 
+type__conge_id (FK) 
+annee 
+jours_attribues 
+jours_pris 
+/*restant = attribués ; pris*/
+
+
+conges:
+id (PK) 
+employe_id (FK) 
+type_conge_id (FK) 
+date_ debut 
+date_ fin 
+nb_jour 
+motif 
+statut 
+commentaire_rh 
+created_at
+traite_par (FK-employes)
+PK = clé primaire - FK= clé étrangère . UNIQUE = contrainte unicité . statut:en_attente I
+approuvee | refusee | annulee
+
+
+
+LOGIQUE MÉTIER - CALCUL DU SOLDE
+La table soldes stocke les jours attribués et les jours pris. Le restant est toujours calculé, jamais stocké.
+
+-----‐Ity code ity-------
+nb jours restant = jours_attribues - jours_pris 
+// A l'approbation 
+UPDATE soldes SET jours_pris = jours_pris + $nb_jours WHERE employe_id = ? AND type_conge_id = ? AND annee = ?
+//Si refus après approbation (annulation)
+UPDATE soldes SET jours_pris = jours_pris - $nb_jours
+------------------------------
+Toujours vérifier que jours_pris + nb_jours_demandés <= jours_attribués avant d'approuver. Retourner une erreur si le solde est insuffisant.
+DIVERS TECHNIQUES CI4
+Authentification & rôles
+○ Session CI4 native, password_hash() obligatoire
+○Filtre AuthFilter sur toutes les routes protégées
+○3 groupes de routes: /employe, /rh , /admin
+○Vérification du rôie dans chaque controller (pas que dans le filtre)
+○CSRF activé sur tous les formulaires POST
+
+   Modèles & données
+○ 1 Model ICI4 par table avec regles de validation
+○ Migrations dans l'ordre:departements > types_conge >employes > soldes > conges
+○ Calcul nb_jours côté late_diff( OU Carbon de PHP:
+○ Query Builder uniquement, pas de SQL brut
+○ Seeder: 1admin, 2 employés, 3 types de congé, soldes initialisés
+
+Routing & structure
+○Pattern PRG : POST » redirect après toute écriture 
+○Flashdata CI4 pour tous les messages succès/erreur 
+○Layout portage layout/app.php + sidebar selon role 
+○Vue separes employer/, rh/, admin/ 
+○Aucun Javascript mother - tout cote server
+
+
+Calcul des Jours
+○Calculer les jours ouvrables uniquement (exclure week- ends)
+○ Bloquer si date_debut>=date_fin
+○ Bloquer si solde insuffisant (message flash explicite)
+○ Bloquer les chevauchements: pas 2 demandes actives aux mêmes dates
+○ Simplification TD: compter tous les jours calendaires si jours ouvrable
