@@ -29,7 +29,7 @@ class Database extends Config
     'hostname' => '',
     'username' => '',
     'password' => '',
-    'database' => WRITEPATH . 'db/ma_base.db',  
+    'database' => WRITEPATH . 'db' . DIRECTORY_SEPARATOR . 'ma_base.db',  
     'DBDriver' => 'SQLite3',
     'DBPrefix' => '',
     'pConnect' => false,

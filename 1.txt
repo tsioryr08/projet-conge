@@ -109,13 +109,13 @@ UPDATE soldes SET jours_pris = jours_pris - $nb_jours
 ------------------------------
 Toujours vérifier que jours_pris + nb_jours_demandés <= jours_attribués avant d'approuver. Retourner une erreur si le solde est insuffisant.
 DIVERS TECHNIQUES CI4
+
 Authentification & rôles
 ○ Session CI4 native, password_hash() obligatoire
 ○Filtre AuthFilter sur toutes les routes protégées
 ○3 groupes de routes: /employe, /rh , /admin
-○Vérification du rôie dans chaque controller (pas que dans le filtre)
+○Vérification du rôle dans chaque controller (pas que dans le filtre)
 ○CSRF activé sur tous les formulaires POST
-
    Modèles & données
 ○ 1 Model ICI4 par table avec regles de validation
 ○ Migrations dans l'ordre:departements > types_conge >employes > soldes > conges
