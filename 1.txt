@@ -1,0 +1,41 @@
+Entreprise TechMada - système RH interne
+Un employé soumet une demande de congé depuls son espace. Le responsable RH la valide ou la refuse. Le solde se met à jour automatiquement. Ladmin supervise l'ensemble des absences via un tableau de bord. Durée cible : 4h en binôme.
+
+CI4 sessions.
+3 rôles
+Logique métier
+Solde calculé 
+
+FONCTIONNALITÈS PAR RÓLE
+
+---Employé
+Rôle par défaut à linscription
+Rôle:employe
+○Connexion déconnexion
+○Soumettre une demande de congé (type, dates, motif)
+○ Consulter ses propres demandes et leurs statuts
+○ Voir son solde de congés restant par type
+Optionnel: 
+○ Annuler une demande encore en attente
+○ Modifier son profil (nom, mot de passe
+
+
+---Responsable RH 
+Valide les demandes de son équipe
+Rôle Rh:
+○Voir toutes les demandes en attente
+○Approuver ou refuser une demande (avec commentalre optionnel)
+○Mise à Jour automatique du solde à l'approbation
+Optionnel
+○ Filtrer les demandes par département ou statut
+○ Voir le solde de chaque employé
+
+---Administrateur
+Gestion complète du système
+Rôle admin:
+○ CRUD emplovés (créer, éditer, désactiver)
+○ CRUD départements et types de congé
+○ Tableau de bord : absences du mols en cours
+Optionnel: 
+○ Initiallser / aluster le solde annuel d'un emplové
+○ Voir l'historique complet de toutes les demandes
