@@ -6,17 +6,23 @@ use CodeIgniter\Model;
 
 class EmployeModel extends Model
 {
-    protected $table      = 'employes';
-    protected $primaryKey = 'id';
-
+    protected $table         = 'employes';
+    protected $primaryKey    = 'id';
+    protected $returnType    = 'array';
     protected $useTimestamps = false;
 
     protected $allowedFields = [
-        'nom', 'prenom', 'email', 'password', 'role', 'departement_id', 'date_embauche', 'actif'
+        'nom', 'prenom', 'email', 'password',
+        'role', 'departement_id', 'date_embauche', 'actif',
     ];
 
     protected $validationRules = [
-        'email' => 'required|valid_email',
+        'email'    => 'required|valid_email',
         'password' => 'required',
     ];
+
+    public function findByEmail(string $email): ?array
+    {
+        return $this->where('email', $email)->first();
+    }
 }
