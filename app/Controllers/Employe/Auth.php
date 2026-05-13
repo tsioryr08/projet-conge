@@ -7,6 +7,9 @@ use App\Models\EmployeModel;
 
 class Auth extends BaseController
 {
+    private const PATH_LOGIN = '/login';
+    private const PATH_EMPLOYE_DASHBOARD = '/employe/';
+
     protected $employeModel;
 
     public function __construct()
@@ -21,79 +24,46 @@ class Auth extends BaseController
         return view('employe/login');
     }
 
-    // public function attempt()
-    // {
-    //     if ($this->request->getMethod() !== 'post') {
-    //         return redirect()->to('/login');
-    //     }
-
-    //     $email = $this->request->getPost('email');
-    //     $password = $this->request->getPost('password');
-        
-    // die("email reçu: " . $email . " | password reçu: " . $password);
-
-    //     $user = $this->employeModel->where('email', $email)->first();
-
-    //     if (!$user) {
-    //         session()->setFlashdata('error', 'Identifiants invalides.');
-    //         return redirect()->to('/login');
-    //     }
-
-    //     if (!password_verify($password, $user['password'])) {
-    //         session()->setFlashdata('error', 'Identifiants invalides.');
-    //         return redirect()->to('/login');
-    //     }
-
-    //     if ((int) $user['actif'] !== 1) {
-    //         session()->setFlashdata('error', 'Compte désactivé.');
-    //         return redirect()->to('/login');
-    //     }
-
-    //     // set session
-    //     $data = [
-    //         'employe_id' => $user['id'],
-    //         'email' => $user['email'],
-    //         'nom' => $user['nom'],
-    //         'prenom' => $user['prenom'],
-    //         'role' => $user['role'],
-    //         'isLoggedIn' => true,
-    //     ];
-
-    //     session()->set($data);
-
-    //     // redirect based on role; default to employe dashboard
-    //     if ($user['role'] === 'admin') {
-    //         return redirect()->to('/admin');
-    //     }
-    //     if ($user['role'] === 'rh') {
-    //         return redirect()->to('/rh');
-    //     }
-
-    //     // return redirect()->to('/employe/');
-    //     return redirect()->to(site_url('employe'));
-    // }
-
     public function attempt()
-{
-    $email    = $this->request->getPost('email');
-    $password = $this->request->getPost('password');
+    {
+        $response = redirect()->to(self::PATH_LOGIN);
 
-    // TEST BRUTAL - on bypass tout
-    session()->set([
-        'employe_id' => 15,
-        'email'      => 'marie@techmada.mg',
-        'nom'        => 'Rasoa',
-        'prenom'     => 'Marie',
-        'role'       => 'employe',
-        'isLoggedIn' => true,
-    ]);
+        if ($this->request->is('post')) {
+            $email = trim((string) $this->request->getPost('email'));
+            $password = (string) $this->request->getPost('password');
 
-    return redirect()->to('/employe/');
-}
+            $user = $this->employeModel->where('email', $email)->first();
+
+            if (! $user || ! password_verify($password, $user['password'])) {
+                session()->setFlashdata('error', 'Identifiants invalides.');
+            } elseif ((int) ($user['actif'] ?? 0) !== 1) {
+                session()->setFlashdata('error', 'Compte désactivé.');
+            } else {
+                session()->set([
+                    'employe_id' => (int) $user['id'],
+                    'email' => $user['email'],
+                    'nom' => $user['nom'],
+                    'prenom' => $user['prenom'],
+                    'role' => $user['role'],
+                    'isLoggedIn' => true,
+                ]);
+
+                if ($user['role'] === 'admin') {
+                    $response = redirect()->to('/admin');
+                } elseif ($user['role'] === 'rh') {
+                    $response = redirect()->to('/rh');
+                } else {
+                    $response = redirect()->to(self::PATH_EMPLOYE_DASHBOARD);
+                }
+            }
+        }
+
+        return $response;
+    }
 
     public function logout()
     {
         session()->destroy();
-        return redirect()->to('/login');
+        return redirect()->to(self::PATH_LOGIN);
     }
 }

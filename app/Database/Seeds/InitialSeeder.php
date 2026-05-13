@@ -16,6 +16,7 @@ class InitialSeeder extends Seeder
         $this->db->table('departements')->truncate();
 
         $annee = date('Y');
+        $now = date('Y-m-d H:i:s');
 
         // ── 1. Départements ──────────────────────────────────────
         $this->db->table('departements')->insertBatch([
@@ -75,17 +76,55 @@ class InitialSeeder extends Seeder
             ],
         ]);
 
+        $marieId = (int) $this->db->table('employes')->select('id')->where('email', 'marie@techmada.mg')->get()->getRowArray()['id'];
+        $jeanId = (int) $this->db->table('employes')->select('id')->where('email', 'jean@techmada.mg')->get()->getRowArray()['id'];
+
         // ── 4. Soldes initiaux ────────────────────────────────────
-        // Pour Marie (id=3) et Jean (id=4)
         $this->db->table('soldes')->insertBatch([
-            // Marie — congé annuel
-            ['employe_id' => 3, 'type_conge_id' => 1, 'annee' => $annee, 'jours_attribues' => 30, 'jours_pris' => 0],
-            // Marie — congé maladie
-            ['employe_id' => 3, 'type_conge_id' => 2, 'annee' => $annee, 'jours_attribues' => 15, 'jours_pris' => 0],
-            // Jean — congé annuel
-            ['employe_id' => 4, 'type_conge_id' => 1, 'annee' => $annee, 'jours_attribues' => 30, 'jours_pris' => 0],
-            // Jean — congé maladie
-            ['employe_id' => 4, 'type_conge_id' => 2, 'annee' => $annee, 'jours_attribues' => 15, 'jours_pris' => 0],
+            ['employe_id' => $marieId, 'type_conge_id' => 1, 'annee' => $annee, 'jours_attribues' => 30, 'jours_pris' => 0],
+            ['employe_id' => $marieId, 'type_conge_id' => 2, 'annee' => $annee, 'jours_attribues' => 15, 'jours_pris' => 0],
+            ['employe_id' => $jeanId, 'type_conge_id' => 1, 'annee' => $annee, 'jours_attribues' => 30, 'jours_pris' => 0],
+            ['employe_id' => $jeanId, 'type_conge_id' => 2, 'annee' => $annee, 'jours_attribues' => 15, 'jours_pris' => 0],
+        ]);
+
+        // ── 5. Demandes de congé de démonstration ────────────────
+        $this->db->table('conges')->insertBatch([
+            [
+                'employe_id'     => $marieId,
+                'type_conge_id'  => 1,
+                'date_debut'     => '2026-05-20',
+                'date_fin'       => '2026-05-22',
+                'nb_jours'       => 3,
+                'motif'          => 'Congé familial',
+                'statut'         => 'en_attente',
+                'commentaire_rh' => null,
+                'created_at'     => $now,
+                'traite_par'     => null,
+            ],
+            [
+                'employe_id'     => $marieId,
+                'type_conge_id'  => 2,
+                'date_debut'     => '2026-04-12',
+                'date_fin'       => '2026-04-13',
+                'nb_jours'       => 2,
+                'motif'          => 'Rendez-vous médical',
+                'statut'         => 'approuvee',
+                'commentaire_rh' => 'Approuvé par RH',
+                'created_at'     => $now,
+                'traite_par'     => 2,
+            ],
+            [
+                'employe_id'     => $marieId,
+                'type_conge_id'  => 1,
+                'date_debut'     => '2026-03-03',
+                'date_fin'       => '2026-03-05',
+                'nb_jours'       => 3,
+                'motif'          => 'Voyage',
+                'statut'         => 'refusee',
+                'commentaire_rh' => 'Chevauchement de planning',
+                'created_at'     => $now,
+                'traite_par'     => 2,
+            ],
         ]);
     }
 }

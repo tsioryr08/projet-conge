@@ -32,6 +32,7 @@ class Demandes extends BaseController
             'title' => 'Mes demandes',
             'nom' => session()->get('nom'),
             'prenom' => session()->get('prenom'),
+            'pendingCount' => $this->congeModel->countByStatus($employeId, 'en_attente'),
             'demandes' => $this->congeModel->forEmploye($employeId),
         ]);
     }
@@ -45,6 +46,7 @@ class Demandes extends BaseController
             'title' => 'Nouvelle demande',
             'nom' => session()->get('nom'),
             'prenom' => session()->get('prenom'),
+            'pendingCount' => $this->congeModel->countByStatus($employeId, 'en_attente'),
             'typesConge' => $this->typeCongeModel->findAll(),
             'soldes' => $this->soldeModel->forEmployeYear($employeId, $year),
             'year' => $year,
@@ -55,7 +57,7 @@ class Demandes extends BaseController
     {
         $response = redirect()->to(self::PATH_CREATE);
 
-        if ($this->request->getMethod() === 'post') {
+        if ($this->request->is('post')) {
             $rules = [
                 'type_conge_id' => 'required|is_natural_no_zero',
                 'date_debut' => 'required|valid_date[Y-m-d]',
@@ -71,8 +73,18 @@ class Demandes extends BaseController
                 if ($payload['error'] !== null) {
                     $response = redirect()->back()->withInput()->with('errors', $payload['error']);
                 } else {
-                    $this->congeModel->insert($payload['data']);
-                    $response = redirect()->to(self::PATH_INDEX)->with('success', 'Votre demande de congé a bien été soumise.');
+                    $insertedId = $this->congeModel->insert($payload['data']);
+
+                    if ($insertedId === false) {
+                        $dbError = service('db')->error();
+                        log_message('error', 'Erreur insertion demande congé: ' . json_encode($dbError, JSON_UNESCAPED_UNICODE));
+
+                        $response = redirect()->back()
+                            ->withInput()
+                            ->with('errors', ['database' => 'Impossible d’enregistrer la demande.']);
+                    } else {
+                        $response = redirect()->to(self::PATH_INDEX)->with('success', 'Votre demande de congé a bien été soumise.');
+                    }
                 }
             }
         }

@@ -24,7 +24,7 @@ $stats          = $stats ?? ['en_attente' => 0, 'approuvee' => 0, 'refusee' => 0
       <li>
         <a href="/employe/demandes">
           <i class="bi bi-calendar3"></i> Mes demandes
-          <span class="nav-badge alert">0</span>
+          <span class="nav-badge alert"><?= esc($pendingCount ?? 0) ?></span>
         </a>
       </li>
       <li><a href="/employe/profile"><i class="bi bi-person"></i> Mon profil</a></li>
@@ -173,7 +173,7 @@ $stats          = $stats ?? ['en_attente' => 0, 'approuvee' => 0, 'refusee' => 0
       </div>
     </div>
 
-    <div class="footer-app"><i class="bi bi-c-circle"></i> 2025 <span>TechMada RH</span> — Projet CodeIgniter 4</div>
+    <div class="footer-app"><i class="bi bi-c-circle"></i> <?= date('Y') ?> <span>TechMada RH</span> — Projet CodeIgniter 4</div>
   </div>
 </div>
 

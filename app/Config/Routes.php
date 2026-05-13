@@ -19,4 +19,6 @@ $routes->group('employe', ['filter' => 'auth:employe'], function($routes) {
     $routes->get('demandes/create', 'Employe\\Demandes::create');
     $routes->post('demandes', 'Employe\\Demandes::store');
     $routes->post('demandes/(:num)/annuler', 'Employe\\Demandes::cancel/$1');
+    $routes->get('profile', 'Employe\\Profil::edit');
+    $routes->post('profile', 'Employe\\Profil::update');
 });

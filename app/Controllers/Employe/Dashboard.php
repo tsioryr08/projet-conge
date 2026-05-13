@@ -23,6 +23,7 @@ class Dashboard extends BaseController
             'year' => $year,
             'soldes' => $soldeModel->forEmployeYear($employeId, $year),
             'latestDemandes' => $congeModel->latestForEmploye($employeId, 3),
+            'pendingCount' => $congeModel->countByStatus($employeId, 'en_attente'),
             'stats' => [
                 'en_attente' => $congeModel->countByStatus($employeId, 'en_attente'),
                 'approuvee' => $congeModel->countByStatus($employeId, 'approuvee'),
