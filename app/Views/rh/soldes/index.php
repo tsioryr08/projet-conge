@@ -15,76 +15,74 @@ $departement_id = $departement_id ?? null;
   <!-- SIDEBAR RH -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="sidebar-logo-icon"><i class="bi bi-shield-check"></i></div>
-      <div class="sidebar-brand-name">TechMada RH<span>Espace RH</span></div>
+      <div class="sidebar-logo-icon"><i class="bi bi-person-check"></i></div>
+      <div class="sidebar-brand-name">TechMada RH<span>Espace responsable</span></div>
     </div>
     <div class="sidebar-section">Menu</div>
     <ul class="sidebar-nav">
-      <li><a href="/rh/demandes"><i class="bi bi-file-earmark-text"></i> Demandes</a></li>
-      <li><a href="/rh/soldes" class="active"><i class="bi bi-bar-chart"></i> Soldes de congés</a></li>
+      <li><a href="/rh/demandes"><i class="bi bi-inbox"></i> Demandes à traiter</a></li>
+      <li><a href="/rh/demandes?statut=approuvee"><i class="bi bi-archive"></i> Historique</a></li>
+      <li><a href="/rh/soldes" class="active"><i class="bi bi-people"></i> Soldes employés</a></li>
     </ul>
     <div class="sidebar-user">
       <div class="s-user-row">
-        <div class="avatar av-green"><?= esc($avatar ?: 'RH') ?></div>
+        <div class="avatar av-blue"><?= esc($avatar ?: 'RH') ?></div>
         <div>
           <div class="user-name"><?= esc($user['prenom'] ?? '') ?> <?= esc($user['nom'] ?? '') ?></div>
-          <div class="user-role">RH</div>
+          <div class="user-role">Responsable RH</div>
         </div>
-        <a href="/logout" style="margin-left:auto;color:rgba(255,255,255,.25);font-size:1.1rem" title="Déconnexion">
-          <i class="bi bi-box-arrow-right"></i>
-        </a>
       </div>
+      <a href="/logout" class="sidebar-logout" title="Déconnexion">
+        <i class="bi bi-box-arrow-right"></i> Déconnexion
+      </a>
     </div>
   </aside>
 
   <div class="main">
     <div class="topbar">
       <div>
-        <div class="topbar-title">Soldes de congés</div>
-        <div class="topbar-breadcrumb"><a href="/rh/soldes">Soldes</a></div>
+        <div class="topbar-title">Soldes employés</div>
+        <div class="topbar-breadcrumb"><a href="/rh/soldes">Accueil</a> <i class="bi bi-chevron-right" style="font-size:.6rem"></i> Soldes</div>
       </div>
     </div>
 
     <div class="content">
       <!-- Filtres -->
-      <div class="data-card" style="margin-bottom:1.5rem">
-        <form method="get" action="/rh/soldes" style="padding:1.25rem;display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap">
-          <div style="display:flex;gap:1rem;flex:1;min-width:300px">
-            <div style="flex:1">
-              <label class="f-label">Année</label>
-              <select name="year" class="f-select">
-                <?php for ($i = date('Y'); $i >= date('Y') - 3; $i--): ?>
-                  <option value="<?= esc($i) ?>" <?= $year == $i ? 'selected' : '' ?>><?= esc($i) ?></option>
-                <?php endfor; ?>
-              </select>
-            </div>
-            <div style="flex:1">
-              <label class="f-label">Département</label>
-              <select name="departement_id" class="f-select">
-                <option value="">Tous les départements</option>
-                <?php foreach ($departements as $dept): ?>
-                  <option value="<?= esc($dept['id']) ?>" <?= $departement_id == $dept['id'] ? 'selected' : '' ?>>
-                    <?= esc($dept['libelle'] ?? 'Département') ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
-            </div>
+      <div style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap;align-items:flex-end">
+        <form method="get" action="/rh/soldes" style="display:flex;gap:8px;align-items:flex-end">
+          <div>
+            <label class="f-label">Année</label>
+            <select name="year" class="f-select" onchange="this.form.submit()" style="font-size:.8rem;padding:6px 10px;width:auto">
+              <?php for ($i = date('Y'); $i >= date('Y') - 3; $i--): ?>
+                <option value="<?= esc($i) ?>" <?= $year == $i ? 'selected' : '' ?>><?= esc($i) ?></option>
+              <?php endfor; ?>
+            </select>
           </div>
-          <button type="submit" class="btn-forest">Filtrer</button>
+          <input type="hidden" name="departement_id" value="<?= $departement_id ?>">
+        </form>
+        <form method="get" action="/rh/soldes" style="margin-left:auto">
+          <select name="departement_id" class="f-select" onchange="this.form.submit()" style="font-size:.8rem;padding:6px 10px;width:auto">
+            <option value="">Tous les départements</option>
+            <?php foreach ($departements as $dept): ?>
+              <option value="<?= esc($dept['id']) ?>" <?= $departement_id == $dept['id'] ? 'selected' : '' ?>>
+                <?= esc($dept['nom'] ?? 'Département') ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+          <input type="hidden" name="year" value="<?= $year ?>">
         </form>
       </div>
 
       <!-- Liste des soldes -->
       <div class="data-card">
         <div class="data-card-head">
-          <h3>Soldes de congés — <?= esc($year) ?> (<?= esc(count($soldes)) ?> entrées)</h3>
+          <h3>Soldes de congés — <?= esc($year) ?></h3>
         </div>
         <table class="tbl">
           <thead>
             <tr>
               <th>Employé</th>
-              <th>Département</th>
-              <th>Type de congé</th>
+              <th>Type</th>
               <th>Attribués</th>
               <th>Pris</th>
               <th>Restants</th>
@@ -99,13 +97,27 @@ $departement_id = $departement_id ?? null;
                 $pris = (int)($solde['jours_pris'] ?? 0);
                 $restants = max(0, $attribues - $pris);
                 $taux = $attribues > 0 ? max(0, min(100, ($pris / $attribues) * 100)) : 0;
+                $typeClass = 't-annuel';
+                if (stripos($solde['type_libelle'], 'maladie') !== false) {
+                    $typeClass = 't-maladie';
+                } elseif (stripos($solde['type_libelle'], 'spécial') !== false) {
+                    $typeClass = 't-special';
+                } elseif (stripos($solde['type_libelle'], 'sans solde') !== false) {
+                    $typeClass = 't-sans-solde';
+                }
+                $avatar = strtoupper(substr($solde['prenom'] ?? '', 0, 1) . substr($solde['nom'] ?? '', 0, 1));
                 ?>
                 <tr>
-                  <td class="td-name">
-                    <div style="font-weight:500"><?= esc($solde['prenom'] ?? '') ?> <?= esc($solde['nom'] ?? '') ?></div>
+                  <td>
+                    <div class="profile-row">
+                      <div class="avatar av-green" style="width:32px;height:32px;font-size:.7rem"><?= esc($avatar) ?></div>
+                      <div class="profile-info">
+                        <div class="pname"><?= esc($solde['prenom'] ?? '') ?> <?= esc($solde['nom'] ?? '') ?></div>
+                        <div class="pdept"><?= esc($solde['dept_libelle'] ?? '—') ?></div>
+                      </div>
+                    </div>
                   </td>
-                  <td class="td-muted"><?= esc($solde['dept_libelle'] ?? '—') ?></td>
-                  <td><span class="type-badge t-annuel"><?= esc($solde['type_libelle'] ?? 'Congé') ?></span></td>
+                  <td><span class="type-badge <?= esc($typeClass) ?>"><?= esc($solde['type_libelle'] ?? 'Congé') ?></span></td>
                   <td class="td-mono"><strong><?= esc($attribues) ?></strong> j</td>
                   <td class="td-mono" style="color:var(--danger)"><strong><?= esc($pris) ?></strong> j</td>
                   <td class="td-mono" style="color:var(--success)"><strong><?= esc($restants) ?></strong> j</td>
@@ -121,8 +133,11 @@ $departement_id = $departement_id ?? null;
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="7" style="text-align:center;padding:2rem;color:var(--muted)">
-                  <i class="bi bi-inbox"></i> Aucun solde trouvé
+                <td colspan="6" style="text-align:center;padding:2rem;color:var(--muted)">
+                  <div class="empty">
+                    <i class="bi bi-inbox"></i>
+                    <p>Aucun solde trouvé</p>
+                  </div>
                 </td>
               </tr>
             <?php endif; ?>

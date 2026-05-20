@@ -137,3 +137,9 @@ Calcul des Jours
 ○ Bloquer si solde insuffisant (message flash explicite)
 ○ Bloquer les chevauchements: pas 2 demandes actives aux mêmes dates
 ○ Simplification TD: compter tous les jours calendaires si jours ouvrable
+
+
+
+
+Maka version offline 
+https://cdn.jsdelivr.net/npm/chart.js
