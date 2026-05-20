@@ -9,7 +9,7 @@ use App\Models\TypeCongeModel;
 
 class Demandes extends BaseController
 {
-    private const PATH_INDEX = '/employe/demandes';
+    private const PATH_INDEX  = '/employe/demandes';
     private const PATH_CREATE = '/employe/demandes/create';
 
     private CongeModel $congeModel;
@@ -19,37 +19,44 @@ class Demandes extends BaseController
     public function __construct()
     {
         helper('form');
-        $this->congeModel = new CongeModel();
-        $this->soldeModel = new SoldeModel();
+        $this->congeModel     = new CongeModel();
+        $this->soldeModel     = new SoldeModel();
         $this->typeCongeModel = new TypeCongeModel();
+    }
+
+    // Helper : récupère l'id de l'employé connecté depuis session['user']
+    private function employeId(): int
+    {
+        $user = session()->get('user');
+        return (int) ($user['id'] ?? 0);
     }
 
     public function index()
     {
-        $employeId = (int) session()->get('employe_id');
+        $user      = $this->currentUser();
+        $employeId = $this->employeId();
 
         return view('employe/demandes/index', [
-            'title' => 'Mes demandes',
-            'nom' => session()->get('nom'),
-            'prenom' => session()->get('prenom'),
+            'title'        => 'Mes demandes',
+            'user'         => $user,
             'pendingCount' => $this->congeModel->countByStatus($employeId, 'en_attente'),
-            'demandes' => $this->congeModel->forEmploye($employeId),
+            'demandes'     => $this->congeModel->forEmploye($employeId),
         ]);
     }
 
     public function create()
     {
-        $employeId = (int) session()->get('employe_id');
-        $year = (int) date('Y');
+        $user      = $this->currentUser();
+        $employeId = $this->employeId();
+        $year      = (int) date('Y');
 
         return view('employe/demandes/create', [
-            'title' => 'Nouvelle demande',
-            'nom' => session()->get('nom'),
-            'prenom' => session()->get('prenom'),
+            'title'        => 'Nouvelle demande',
+            'user'         => $user,
             'pendingCount' => $this->congeModel->countByStatus($employeId, 'en_attente'),
-            'typesConge' => $this->typeCongeModel->findAll(),
-            'soldes' => $this->soldeModel->forEmployeYear($employeId, $year),
-            'year' => $year,
+            'typesConge'   => $this->typeCongeModel->findAll(),
+            'soldes'       => $this->soldeModel->forEmployeYear($employeId, $year),
+            'year'         => $year,
         ]);
     }
 
@@ -60,9 +67,9 @@ class Demandes extends BaseController
         if ($this->request->is('post')) {
             $rules = [
                 'type_conge_id' => 'required|is_natural_no_zero',
-                'date_debut' => 'required|valid_date[Y-m-d]',
-                'date_fin' => 'required|valid_date[Y-m-d]',
-                'motif' => 'permit_empty|max_length[1000]',
+                'date_debut'    => 'required|valid_date[Y-m-d]',
+                'date_fin'      => 'required|valid_date[Y-m-d]',
+                'motif'         => 'permit_empty|max_length[1000]',
             ];
 
             if (! $this->validate($rules)) {
@@ -78,10 +85,7 @@ class Demandes extends BaseController
                     if ($insertedId === false) {
                         $dbError = service('db')->error();
                         log_message('error', 'Erreur insertion demande congé: ' . json_encode($dbError, JSON_UNESCAPED_UNICODE));
-
-                        $response = redirect()->back()
-                            ->withInput()
-                            ->with('errors', ['database' => 'Impossible d’enregistrer la demande.']);
+                        $response = redirect()->back()->withInput()->with('errors', ['database' => 'Impossible d\'enregistrer la demande.']);
                     } else {
                         $response = redirect()->to(self::PATH_INDEX)->with('success', 'Votre demande de congé a bien été soumise.');
                     }
@@ -94,21 +98,26 @@ class Demandes extends BaseController
 
     private function buildDemandPayload(): array
     {
-        $input = $this->getDemandInput();
+        $input      = $this->getDemandInput();
         $validation = $this->validateDemandInput($input);
-        $error = $validation['error'];
-        $data = [];
+        $error      = $validation['error'];
+        $data       = [];
 
         if ($error === null) {
             $normalizedInput = $validation['input'];
-            $typeConge = $this->typeCongeModel->find($normalizedInput['type_conge_id']);
+            $typeConge       = $this->typeCongeModel->find($normalizedInput['type_conge_id']);
 
             if (! $typeConge) {
                 $error = ['type_conge_id' => 'Type de congé introuvable.'];
             } elseif ($this->hasDemandOverlap($normalizedInput['employe_id'], $normalizedInput['date_debut'], $normalizedInput['date_fin'])) {
                 $error = ['date_debut' => 'Vous avez déjà une demande active sur cette période.'];
             } else {
-                $soldeError = $this->validateSoldeAvailability($normalizedInput['employe_id'], $normalizedInput['type_conge_id'], $typeConge, $normalizedInput['nb_jours']);
+                $soldeError = $this->validateSoldeAvailability(
+                    $normalizedInput['employe_id'],
+                    $normalizedInput['type_conge_id'],
+                    $typeConge,
+                    $normalizedInput['nb_jours']
+                );
 
                 if ($soldeError !== null) {
                     $error = $soldeError;
@@ -118,29 +127,26 @@ class Demandes extends BaseController
             }
         }
 
-        return [
-            'error' => $error,
-            'data' => $data,
-        ];
+        return ['error' => $error, 'data' => $data];
     }
 
     private function getDemandInput(): array
     {
         return [
-            'employe_id' => (int) session()->get('employe_id'),
+            'employe_id'    => $this->employeId(),   // ← corrigé
             'type_conge_id' => (int) $this->request->getPost('type_conge_id'),
-            'date_debut' => (string) $this->request->getPost('date_debut'),
-            'date_fin' => (string) $this->request->getPost('date_fin'),
-            'motif' => trim((string) $this->request->getPost('motif')),
+            'date_debut'    => (string) $this->request->getPost('date_debut'),
+            'date_fin'      => (string) $this->request->getPost('date_fin'),
+            'motif'         => trim((string) $this->request->getPost('motif')),
         ];
     }
 
     private function validateDemandInput(array $input): array
     {
-        $error = null;
+        $error          = null;
         $normalizedInput = $input;
         $debut = \DateTimeImmutable::createFromFormat('Y-m-d', $input['date_debut']) ?: null;
-        $fin = \DateTimeImmutable::createFromFormat('Y-m-d', $input['date_fin']) ?: null;
+        $fin   = \DateTimeImmutable::createFromFormat('Y-m-d', $input['date_fin'])   ?: null;
 
         if (! $debut || ! $fin) {
             $error = ['date_debut' => 'Dates invalides.'];
@@ -148,7 +154,7 @@ class Demandes extends BaseController
             $today = new \DateTimeImmutable('today');
 
             if ($debut < $today) {
-                $error = ['date_debut' => 'La date de début doit être aujourd’hui ou dans le futur.'];
+                $error = ['date_debut' => 'La date de début doit être aujourd\'hui ou dans le futur.'];
             } elseif ($fin < $debut) {
                 $error = ['date_fin' => 'La date de fin doit être supérieure ou égale à la date de début.'];
             } else {
@@ -158,16 +164,13 @@ class Demandes extends BaseController
                     $error = ['date_fin' => 'La période sélectionnée ne contient aucun jour ouvrable.'];
                 } else {
                     $normalizedInput['date_debut'] = $debut->format('Y-m-d');
-                    $normalizedInput['date_fin'] = $fin->format('Y-m-d');
-                    $normalizedInput['nb_jours'] = $nbJours;
+                    $normalizedInput['date_fin']   = $fin->format('Y-m-d');
+                    $normalizedInput['nb_jours']   = $nbJours;
                 }
             }
         }
 
-        return [
-            'error' => $error,
-            'input' => $normalizedInput,
-        ];
+        return ['error' => $error, 'input' => $normalizedInput];
     }
 
     private function hasDemandOverlap(int $employeId, string $dateDebut, string $dateFin): bool
@@ -188,9 +191,9 @@ class Demandes extends BaseController
             return null;
         }
 
-        $solde = $this->soldeModel->findForEmployeeTypeYear($employeId, $typeCongeId, (int) date('Y'));
+        $solde         = $this->soldeModel->findForEmployeeTypeYear($employeId, $typeCongeId, (int) date('Y'));
         $joursAttribues = (int) ($solde['jours_attribues'] ?? 0);
-        $joursPris = (int) ($solde['jours_pris'] ?? 0);
+        $joursPris      = (int) ($solde['jours_pris']      ?? 0);
 
         if (($joursPris + $nbJours) > $joursAttribues) {
             return ['type_conge_id' => 'Solde insuffisant pour cette demande.'];
@@ -202,21 +205,21 @@ class Demandes extends BaseController
     private function buildDemandData(array $input): array
     {
         return [
-            'employe_id' => $input['employe_id'],
+            'employe_id'    => $input['employe_id'],
             'type_conge_id' => $input['type_conge_id'],
-            'date_debut' => $input['date_debut'],
-            'date_fin' => $input['date_fin'],
-            'nb_jours' => $input['nb_jours'],
-            'motif' => $input['motif'] !== '' ? $input['motif'] : null,
-            'statut' => 'en_attente',
-            'created_at' => date('Y-m-d H:i:s'),
+            'date_debut'    => $input['date_debut'],
+            'date_fin'      => $input['date_fin'],
+            'nb_jours'      => $input['nb_jours'],
+            'motif'         => $input['motif'] !== '' ? $input['motif'] : null,
+            'statut'        => 'en_attente',
+            'created_at'    => date('Y-m-d H:i:s'),
         ];
     }
 
     public function cancel(int $id)
     {
-        $employeId = (int) session()->get('employe_id');
-        $demande = $this->congeModel->where('id', $id)->where('employe_id', $employeId)->first();
+        $employeId = $this->employeId();
+        $demande   = $this->congeModel->where('id', $id)->where('employe_id', $employeId)->first();
 
         if (! $demande) {
             return redirect()->to(self::PATH_INDEX)->with('error', 'Demande introuvable.');
@@ -233,7 +236,7 @@ class Demandes extends BaseController
 
     private function countBusinessDays(\DateTimeImmutable $debut, \DateTimeImmutable $fin): int
     {
-        $count = 0;
+        $count   = 0;
         $current = $debut;
 
         while ($current <= $fin) {
