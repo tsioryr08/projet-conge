@@ -17,9 +17,19 @@
         <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:10px;margin-bottom:8px">
           <i class="bi bi-person" style="color:var(--leaf)"></i>
           <div>
+            <div style="font-size:.8rem;font-weight:500;color:var(--white)">Admin</div>
+            <div style="font-size:.72rem;color:rgba(255,255,255,.4);font-family:monospace">admin@techmada.mg · admin123</div>
+          </div>
+        
+           <div>
+            <div style="font-size:.8rem;font-weight:500;color:var(--white)">RH</div>
+            <div style="font-size:.72rem;color:rgba(255,255,255,.4);font-family:monospace">rh@techmada.mg · rh123</div>
+          </div>
+          <div>
             <div style="font-size:.8rem;font-weight:500;color:var(--white)">Employé</div>
             <div style="font-size:.72rem;color:rgba(255,255,255,.4);font-family:monospace">marie@techmada.mg · employe123</div>
           </div>
+         
         </div>
       </div>
     </div>

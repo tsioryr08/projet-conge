@@ -10,7 +10,8 @@ class Dashboard extends BaseController
 {
     public function index()
     {
-        $employeId = (int) session()->get('employe_id');
+        $user=$this->currentUser();
+        $employeId = (int) ($user['id'] ?? 0);
         $year = (int) date('Y');
         $congeModel = new CongeModel();
         $soldeModel = new SoldeModel();
@@ -33,4 +34,49 @@ class Dashboard extends BaseController
 
         return view('employe/dashboard', $data);
     }
+
+    public function calendrier()
+{
+    $user = $this->currentUser();
+    $employeId = (int) ($user['id'] ?? 0);
+
+    $congeModel = new CongeModel();
+    $demandes   = $congeModel->forEmploye($employeId);
+
+    // Construire les events FullCalendar
+    $events = [];
+    foreach ($demandes as $d) {
+        $color = match($d['statut']) {
+            'approuvee'  => '#1e6b3f',
+            'refusee'    => '#c0392b',
+            'annulee'    => '#7a8f80',
+            default      => '#b8750a',
+        };
+        $label = match($d['statut']) {
+            'approuvee' => 'Approuvée',
+            'refusee'   => 'Refusée',
+            'annulee'   => 'Annulée',
+            default     => 'En attente',
+        };
+        $events[] = [
+            'title' => ($d['type_libelle'] ?? 'Congé') . ' — ' . $label,
+            'start' => $d['date_debut'],
+            'end'   => date('Y-m-d', strtotime($d['date_fin'] . ' +1 day')),
+            'color' => $color,
+            'extendedProps' => [
+                'statut' => $label,
+                'motif'  => $d['motif'] ?? '',
+                'nb_jours' => $d['nb_jours'] ?? 0,
+            ],
+        ];
+    }
+
+    return view('employe/calendrier', [
+        'title'   => 'Vue calendrier',
+        'nom'     => session()->get('nom'),
+        'prenom'  => session()->get('prenom'),
+        'events'  => json_encode($events),
+        'pendingCount' => $congeModel->countByStatus($employeId, 'en_attente'),
+    ]);
+}
 }

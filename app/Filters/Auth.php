@@ -9,18 +9,16 @@ use CodeIgniter\HTTP\ResponseInterface;
 class Auth implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
-    {
-        $user = session()->get('user');
+{
+    // ✅ utilise isLoggedIn et role directement
+    if (! session()->get('isLoggedIn')) {
+        return redirect()->to(base_url('login'));
+    }
 
-        // Pas connecté → retour au login
-        if (! is_array($user) || empty($user['role'])) {
-            return redirect()->to(base_url('login'));
-        }
-
-        // Vérification du rôle si précisé dans le filtre (ex: auth:rh)
-        if (! empty($arguments) && ! in_array($user['role'], $arguments, true)) {
-            // Connecté mais mauvais rôle → rediriger vers son propre dashboard
-            $path = match ($user['role']) {
+    if (! empty($arguments)) {
+        $role = session()->get('role') ?? '';
+        if (! in_array($role, $arguments, true)) {
+            $path = match ($role) {
                 'admin'   => 'admin',
                 'rh'      => 'rh',
                 'employe' => 'employe',
@@ -29,6 +27,7 @@ class Auth implements FilterInterface
             return redirect()->to(base_url($path));
         }
     }
+}
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {

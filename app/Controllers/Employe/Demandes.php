@@ -26,7 +26,8 @@ class Demandes extends BaseController
 
     public function index()
     {
-        $employeId = (int) session()->get('employe_id');
+        $user=$this->currentUser();
+        $employeId = (int) ($user['id'] ?? 0);
 
         return view('employe/demandes/index', [
             'title' => 'Mes demandes',
@@ -189,6 +190,10 @@ class Demandes extends BaseController
         }
 
         $solde = $this->soldeModel->findForEmployeeTypeYear($employeId, $typeCongeId, (int) date('Y'));
+
+          // TEST TEMPORAIRE
+    // die("employeId=$employeId | typeCongeId=$typeCongeId | annee=" . date('Y') . " | solde=" . json_encode($solde));
+
         $joursAttribues = (int) ($solde['jours_attribues'] ?? 0);
         $joursPris = (int) ($solde['jours_pris'] ?? 0);
 
@@ -230,6 +235,55 @@ class Demandes extends BaseController
 
         return redirect()->to(self::PATH_INDEX)->with('success', 'La demande a été annulée.');
     }
+
+    //statistiques
+    public function statistiques()
+{
+    $user = $this->currentUser();
+    $employeId = (int) ($user['id'] ?? 0);
+
+    $demandes = $this->congeModel->forEmploye($employeId);
+
+    // Nombre total par type de congé
+    $parType = [];
+    foreach ($demandes as $d) {
+        $libelle = $d['type_libelle'] ?? 'Inconnu';
+        $parType[$libelle] = ($parType[$libelle] ?? 0) + 1;
+    }
+
+    // Nombre par statut
+    $parStatut = [
+        'en_attente' => 0,
+        'approuvee'  => 0,
+        'refusee'    => 0,
+        'annulee'    => 0,
+    ];
+    foreach ($demandes as $d) {
+        $s = $d['statut'] ?? 'en_attente';
+        if (isset($parStatut[$s])) $parStatut[$s]++;
+    }
+
+    // Total jours pris par type
+    $joursByType = [];
+    foreach ($demandes as $d) {
+        if ($d['statut'] === 'approuvee') {
+            $libelle = $d['type_libelle'] ?? 'Inconnu';
+            $joursByType[$libelle] = ($joursByType[$libelle] ?? 0) + (int)($d['nb_jours'] ?? 0);
+        }
+    }
+
+    return view('employe/statistiques', [
+        'title'        => 'Statistiques & Historique',
+        'nom'          => session()->get('nom'),
+        'prenom'       => session()->get('prenom'),
+        'pendingCount' => $this->congeModel->countByStatus($employeId, 'en_attente'),
+        'demandes'     => $demandes,
+        'parType'      => $parType,
+        'parStatut'    => $parStatut,
+        'joursByType'  => $joursByType,
+        'total'        => count($demandes),
+    ]);
+}
 
     private function countBusinessDays(\DateTimeImmutable $debut, \DateTimeImmutable $fin): int
     {

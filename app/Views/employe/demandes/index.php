@@ -13,6 +13,9 @@
       <li><a href="/employe/"><i class="bi bi-grid-1x2"></i> Tableau de bord</a></li>
       <li><a href="/employe/demandes/create"><i class="bi bi-plus-circle"></i> Nouvelle demande</a></li>
       <li><a href="/employe/demandes" class="active"><i class="bi bi-calendar3"></i> Mes demandes <span class="nav-badge alert"><?= esc($pendingCount ?? 0) ?></span></a></li>
+      <li><a href="/employe/profile"><i class="bi bi-person"></i> Mon profil</a></li>
+      <li><a href="/employe/calendrier" class="active"><i class="bi bi-calendar-week"></i> Calendrier</a></li>
+      <li><a href="/employe/statistiques"><i class="bi bi-bar-chart"></i> Statistiques</a></li>
       <li><a href="/logout"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></li>
     </ul>
   </aside>

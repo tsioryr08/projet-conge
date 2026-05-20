@@ -28,6 +28,10 @@ $stats          = $stats ?? ['en_attente' => 0, 'approuvee' => 0, 'refusee' => 0
         </a>
       </li>
       <li><a href="/employe/profile"><i class="bi bi-person"></i> Mon profil</a></li>
+   
+<li><a href="/employe/calendrier"><i class="bi bi-calendar-week"></i> Calendrier</a></li>
+<li><a href="/employe/statistiques"><i class="bi bi-bar-chart"></i> Statistiques</a></li>
+<li><a href="/logout"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></li>
     </ul>
     <div class="sidebar-user">
       <div class="s-user-row">
@@ -71,6 +75,7 @@ $stats          = $stats ?? ['en_attente' => 0, 'approuvee' => 0, 'refusee' => 0
           <div class="metric-val"><?= esc($stats['en_attente'] ?? 0) ?></div>
           <div class="metric-label">En attente</div>
         </div>
+
         <div class="metric">
           <div class="metric-top"><div class="metric-icon mi-green"><i class="bi bi-check-circle"></i></div></div>
           <div class="metric-val"><?= esc($stats['approuvee'] ?? 0) ?></div>

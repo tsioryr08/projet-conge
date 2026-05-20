@@ -21,8 +21,21 @@ abstract class BaseController extends Controller
 
     protected function currentUser(): ?array
     {
-        $user = service('session')->get('user');  // ← service() au lieu de $this->session
-        return is_array($user) ? $user : null;
+        $session = service('session');
+        $employeId = $session->get('employe_id');
+        
+        if (!$employeId) {
+            return null;
+        }
+        
+        return [
+            'id' => (int) $employeId,
+            'email' => $session->get('email'),
+            'nom' => $session->get('nom'),
+            'prenom' => $session->get('prenom'),
+            'role' => $session->get('role'),
+            'isLoggedIn' => $session->get('isLoggedIn'),
+        ];
     }
 
     protected function dashboardPathForRole(?string $role): string

@@ -1,0 +1,3 @@
+-mettre le lien calendrier partout dans le sidebar [wip]
+-voir pourquoi c est tjrs solde insuffisant quand je veux inserer une nouvelle demande []
+-voir si si j ajoite une new demande ->est ce que ca s'affiche dans calendrier []

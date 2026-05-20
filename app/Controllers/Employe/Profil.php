@@ -17,7 +17,8 @@ class Profil extends BaseController
 
     public function edit()
     {
-        $employeId = (int) session()->get('employe_id');
+        $user=$this->currentUser();
+        $employeId = (int) ($user['id'] ?? 0);
         $employe = $this->employeModel->find($employeId);
 
         if (! $employe) {
@@ -36,14 +37,13 @@ class Profil extends BaseController
 
     public function update()
     {
-        $response = redirect()->to('/employe/profile');
+        if (!$this->request->is('post')) {
+            return redirect()->to('/employe/profile');
+        }
 
+        $response = redirect()->to('/employe/profile');
         $employeId = (int) session()->get('employe_id');
         $employe = $this->employeModel->find($employeId);
-
-        if ($this->request->getMethod() !== 'post') {
-            return $response;
-        }
 
         if (! $employe) {
             return redirect()->to('/login')->with('error', 'Votre compte est introuvable.');
