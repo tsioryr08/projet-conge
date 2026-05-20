@@ -21,7 +21,7 @@ class Auth extends BaseController
     public function login()
     {
         // show login form
-        return view('employe/login');
+        return view('auth/login');
     }
 
     public function attempt()
