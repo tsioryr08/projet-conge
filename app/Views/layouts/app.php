@@ -98,6 +98,8 @@ code,pre,.mono{font-family:'DM Mono',monospace}
 .av-amber{background:#b8750a}
 .user-name{font-size:.825rem;font-weight:500;color:var(--white);line-height:1.2}
 .user-role{font-size:.65rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.06em}
+.sidebar-logout{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);text-decoration:none;font-size:.8rem;font-weight:500;transition:all .15s;width:100%;justify-content:center;margin-top:8px}
+.sidebar-logout:hover{background:rgba(255,255,255,.12);color:var(--white)}
 
 /* ─── MAIN ──────────────────────────────── */
 .main{flex:1;min-width:0;display:flex;flex-direction:column}

@@ -36,10 +36,10 @@ $stats          = $stats ?? ['en_attente' => 0, 'approuvee' => 0, 'refusee' => 0
           <div class="user-name"><?= esc($prenom ?? '') ?> <?= esc($nom ?? '') ?></div>
           <div class="user-role">Employé</div>
         </div>
-        <a href="/logout" style="margin-left:auto;color:rgba(255,255,255,.25);font-size:1.1rem" title="Déconnexion">
-          <i class="bi bi-box-arrow-right"></i>
-        </a>
       </div>
+      <a href="/logout" class="sidebar-logout" title="Déconnexion">
+        <i class="bi bi-box-arrow-right"></i> Déconnexion
+      </a>
     </div>
   </aside>
 

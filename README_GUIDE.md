@@ -93,4 +93,3 @@ php spark serve
 ```
 
 ---
-Si tu veux, j'implémente maintenant l'étape suivante : création des migrations (ordre ci‑dessus) ou mise en place de l'authentification employé. Dis-moi celle que tu veux commencer en premier.

@@ -25,6 +25,9 @@
           <div class="user-role">Employé</div>
         </div>
       </div>
+      <a href="/logout" class="sidebar-logout" title="Déconnexion">
+        <i class="bi bi-box-arrow-right"></i> Déconnexion
+      </a>
     </div>
   </aside>
 

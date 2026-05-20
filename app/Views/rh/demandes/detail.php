@@ -19,25 +19,26 @@ $displayStatus = match($demande['statut'] ?? 'en_attente') {
   <!-- SIDEBAR RH -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="sidebar-logo-icon"><i class="bi bi-shield-check"></i></div>
-      <div class="sidebar-brand-name">TechMada RH<span>Espace RH</span></div>
+      <div class="sidebar-logo-icon"><i class="bi bi-person-check"></i></div>
+      <div class="sidebar-brand-name">TechMada RH<span>Espace responsable</span></div>
     </div>
     <div class="sidebar-section">Menu</div>
     <ul class="sidebar-nav">
-      <li><a href="/rh/demandes"><i class="bi bi-file-earmark-text"></i> Demandes</a></li>
-      <li><a href="/rh/soldes"><i class="bi bi-bar-chart"></i> Soldes de congés</a></li>
+      <li><a href="/rh/demandes"><i class="bi bi-inbox"></i> Demandes à traiter</a></li>
+      <li><a href="/rh/demandes?statut=approuvee"><i class="bi bi-archive"></i> Historique</a></li>
+      <li><a href="/rh/soldes"><i class="bi bi-people"></i> Soldes employés</a></li>
     </ul>
     <div class="sidebar-user">
       <div class="s-user-row">
-        <div class="avatar av-green"><?= esc($avatar ?: 'RH') ?></div>
+        <div class="avatar av-blue"><?= esc($avatar ?: 'RH') ?></div>
         <div>
           <div class="user-name"><?= esc($user['prenom'] ?? '') ?> <?= esc($user['nom'] ?? '') ?></div>
-          <div class="user-role">RH</div>
+          <div class="user-role">Responsable RH</div>
         </div>
-        <a href="/logout" style="margin-left:auto;color:rgba(255,255,255,.25);font-size:1.1rem" title="Déconnexion">
-          <i class="bi bi-box-arrow-right"></i>
-        </a>
       </div>
+      <a href="/logout" class="sidebar-logout" title="Déconnexion">
+        <i class="bi bi-box-arrow-right"></i> Déconnexion
+      </a>
     </div>
   </aside>
 
